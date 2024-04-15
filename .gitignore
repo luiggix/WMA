@@ -128,3 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# No subir el ejecutable de MODFLOW6
+mf6/bin/
+
