@@ -7,8 +7,10 @@ import matplotlib.pyplot as plt # Graficación
 import flopy
 from flopy.plot.styles import styles
 
+# Biblioteca construida para este proyecto
 import vflow
 
+# ----- Definición de Parámetros -----
 mesh = vflow.MeshDis(
     nrow = 1,    # Number of rows
     ncol = 120,  # Number of columns
@@ -40,28 +42,61 @@ os_params = dict(ws = os.getcwd(), # Ruta de donde estamos actualmente
                  budget_file = "flow.bud"
                 )
 
-print(' Ruta hacia el ejecutable de MODFLOW 6 : {} '.format(os_params["mf6_exe"]))
-print(' Ruta actual : {}'.format(os_params["ws"]))
-print(' Nombre de esta simulación: {}'.format(os_params["name"]))
+# ------------------------------------
 
 def build_gwf(mesh, tparams, pparams, model_units, os_params):
+    """
+    Función que crea una simulación para flujo usando GWF
+
+    Parameters
+    ----------
+    mesh: MeshDis
+    Objeto que gestiona atributos y métodos de una malla rectangular
+    estructurada y uniforme.
+
+    tparams: dict
+    Diccionario con los parámetros del tiempo.
+
+    pparams: dict
+    Diccionario con los parámetros físicos del problema.
+
+    model_units: dict
+    Unidades para los parámetros del problema.
+
+    os_params: dict
+    Parámetros para ejecución de MODFLOW 6, archivos de salida y 
+    path del workspace.
+
+    Returns
+    -------
+    sim: MFSimulation
+    Objeto de la simulación.
+
+    gwf:
+    Objeto del modelo GWF.
+    """
+    # Creamos la simulación
     sim = flopy.mf6.MFSimulation(sim_name=os_params["name"], 
                                  sim_ws=os_params["ws"], 
                                  exe_name=os_params["mf6_exe"])
+
+    # Definimos la componente para el tiempo
     flopy.mf6.ModflowTdis(sim, 
                           nper=tparams["nper"], 
                           perioddata=((tparams["total_time"], 
                                        tparams["nstp"], 
                                        tparams["tsmult"]),), 
                           time_units=model_units["time"])
-    
+
+    # Definimos la componente para la solución numérica
     flopy.mf6.ModflowIms(sim)
-    
+
+    # Definimos el modelo GWF
     gwf = flopy.mf6.ModflowGwf(sim, 
                                modelname=os_params["name"],
                                save_flows=True)
     
-    
+    # Paquete para discretización espacial
     flopy.mf6.ModflowGwfdis(gwf,
                             length_units=model_units["length"],
                             nlay=mesh.nlay,
@@ -72,19 +107,23 @@ def build_gwf(mesh, tparams, pparams, model_units, os_params):
                             top=mesh.top,
                             botm=mesh.bottom,
     )
-    
+
+    # Paquete para las condiciones iniciales
     flopy.mf6.ModflowGwfic(gwf, strt=1.0)
-    
+
+    # Paquete para las propiedades de flujo en los nodos
     flopy.mf6.ModflowGwfnpf(gwf,
                             save_specific_discharge=True,
                             save_saturation=True,
                             icelltype=0,
                             k=pparams["hydraulic_conductivity"],
     )
-    
+
+    # Paquete CHD
     flopy.mf6.ModflowGwfchd(gwf, 
                             stress_period_data=[[(0, 0, mesh.ncol - 1), 1.0]]) 
-    
+
+    # Paquete de pozos
     q = pparams["specific_discharge"] * mesh.delc * mesh.delr * mesh.top
     aux = pparams["source_concentration"]
     flopy.mf6.ModflowGwfwel(gwf,
@@ -92,7 +131,8 @@ def build_gwf(mesh, tparams, pparams, model_units, os_params):
                             pname="WEL-1",
                             auxiliary=["CONCENTRATION"],
     )
-    
+
+    # Paquete para la salida
     flopy.mf6.ModflowGwfoc(gwf,
                            head_filerecord=os_params["head_file"],
                            budget_filerecord=os_params["budget_file"],
@@ -101,9 +141,27 @@ def build_gwf(mesh, tparams, pparams, model_units, os_params):
 
     return sim, gwf
 
-def plot_results(gwf, mesh, os_params):
+def plot_results(gwf, mesh, os_params, savefig = False):
+    """
+    Función para graficar los resultados.
+
+    Paramaters
+    ----------
+    gwf: ModflowGwf
+    Objeto del modelo de flujo GWF
+
+    mesh: MeshDis
+    Objeto que gestiona atributos y métodos de una malla rectangular
+    estructurada y uniforme.
+
+    os_params: dict
+    Parámetros para ejecución de MODFLOW 6, archivos de salida y 
+    path del workspace.
+    """
     # Obtenemos los resultados de la carga hidráulica
     head = flopy.utils.HeadFile(os.path.join(os_params["ws"], os_params["head_file"])).get_data()
+
+    print(head[0,0,0], head[0,0,-1])
     
     # Obtenemos los resultados del BUDGET
     bud  = flopy.utils.CellBudgetFile(os.path.join(os_params["ws"], os_params["budget_file"]),
@@ -120,17 +178,27 @@ def plot_results(gwf, mesh, os_params):
         plt.xlim(0, 12)
         plt.xticks(ticks=np.linspace(0, mesh.row_length,13))
         plt.xlabel("Distance (cm)")
-        plt.ylabel("Normalized Concentration (unitless)")
+        plt.ylabel("Head (unitless)")
         plt.legend()
         plt.grid()
-        plt.savefig('head.pdf')
+
+        if savefig:
+            plt.savefig('head.pdf')
+        else:
+            plt.show()
 
 
-sim, gwf = build_gwf(mesh, tparams, pparams, model_units, os_params)
+if __name__ == '__main__':
 
-sim.write_simulation()
-
-sim.run_simulation()
-
-plot_results(gwf, mesh, os_params)
+    print(' Ruta hacia el ejecutable de MODFLOW 6 : {} '.format(os_params["mf6_exe"]))
+    print(' Ruta actual : {}'.format(os_params["ws"]))
+    print(' Nombre de esta simulación: {}'.format(os_params["name"]))
+    
+    sim, gwf = build_gwf(mesh, tparams, pparams, model_units, os_params)
+    
+    sim.write_simulation()
+    
+    sim.run_simulation()
+    
+    plot_results(gwf, mesh, os_params, True)
     
