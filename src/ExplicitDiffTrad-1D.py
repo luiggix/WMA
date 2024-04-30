@@ -68,8 +68,14 @@ for i in range(0, nds_x+1):
 #------ Definiendo vectores y matriz  para el sistema de eq lineales ---------------------#
 #------------------------------------------------------------------------------------------#
 
-Beta_W = np.zeros(nds_x); Beta_C = np.zeros(nds_x); Beta_E = np.zeros(nds_x); Beta_r = np.zeros(nds_x)                          
-Lambda_W = np.zeros(nds_x); Lambda_C = np.zeros(nds_x); Lambda_E = np.zeros(nds_x); Lambda_r = np.zeros(nds_x)                          
+Beta_W = np.zeros(nds_x); 
+Beta_C = np.zeros(nds_x); 
+Beta_E = np.zeros(nds_x); 
+Beta_r = np.zeros(nds_x)                          
+Lambda_W = np.zeros(nds_x); 
+Lambda_C = np.zeros(nds_x); 
+Lambda_E = np.zeros(nds_x); 
+Lambda_r = np.zeros(nds_x)                          
 c_ini = np.zeros(nds_x)                       #Vector de condiciones iniciales de c
 c_n = np.zeros(nds_x)                         #Vector de valor de c a un paso de tiempo n (necesario para la solución del sistema de ecuaciones)
 c_v = np.zeros(nds_x)                         #Vector de valor de c a un paso de tiempo n+1
