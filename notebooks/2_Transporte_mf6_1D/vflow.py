@@ -17,16 +17,12 @@ class MeshDis():
         self.__bottom = bottom # Layer bottom elevation 
 
     def print(self):
-        print('NX : {:8d} (ncol)'.format(self.__nx))
-        print('NY : {:8d} (nrow)'.format(self.__ny))
-        print('NZ : {:8d} (nlay)'.format(self.__nz))
-        print('LX : {:8.5} (row)'.format(self.__lx))
-        print('LY : {:8.5} (col)'.format(self.__ly))
-        print('LZ : {:8.5} (lay)'.format(self.__lz))
-        print('DX : {:8.5} (delr)'.format(self.__dx))
-        print('DY : {:8.5} (delc)'.format(self.__dy))
-        print('DZ : {:8.5} (top-botm)'.format(self.__dz))
-
+        print('NX : {}'.format(self.__nx))
+        print('NY : {}'.format(self.__ny))
+        print('NZ : {}'.format(self.__nz))
+        print('LX : {}'.format(self.__lx))
+        print('LY : {}'.format(self.__ly))
+        print('LZ : {}'.format(self.__lz))    
             
     @property
     def ncol(self):
@@ -136,20 +132,7 @@ class MeshDis():
                                  np.linspace(0, self.__ly, self.__ny),
                                  np.linspace(0, self.__lz, self.__nz))
 
-    def get_dict(self):
-        return {'row_length': self.__lx, 'col_length': self.__ly, 'lay_length': self.__lz,
-                'ncol': self.__nx, 'nrow': self.__ny, 'nlay': self.__nz,
-                'delr': self.__dx, 'delc': self.__dy, 'dell': self.__dz,
-                'top': self.__top, 'bottom': self.__bottom}
-
-def nice_print(dic, message = ''):
-    print()
-    print(message)
-    print('{:^30}'.format(30*'-'))
-    for k,v in dic.items():
-        print('{:>20} = {:<10}'.format(k, v))
-
-
+        
 if __name__ == '__main__':
     mesh = MeshDis(
         nrow = 1,    # Number of rows

@@ -30,8 +30,8 @@ tparams = dict(nper = 1,  # Number of periods
 model_units = {"time": "seconds",
                "length": "centimeters"}
 
-pparams = dict(hydraulic_conductivity = 0.01,  # Hydraulic conductivity ($cm s^{-1}$)
-               specific_discharge = 0.1,  # Specific discharge ($cm s^{-1}$)
+pparams = dict(specific_discharge = 0.1,  # Specific discharge ($cm s^{-1}$)
+               hydraulic_conductivity = 0.01,  # Hydraulic conductivity ($cm s^{-1}$)
                source_concentration = 1.0  # Source concentration (unitless)
               )
 
