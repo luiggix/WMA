@@ -168,13 +168,18 @@ def plot_flow_1D(gwf, mesh, os_par, oc_par, savefig = False):
     path del workspace.
     """
     # Obtenemos los resultados de la carga hidráulica
-    head = flopy.utils.HeadFile(os.path.join(os_par["ws"], oc_par["head_file"])).get_data()
+    head = flopy.utils.HeadFile(
+        os.path.join(os_par["ws"], 
+                     oc_par["head_file"])).get_data()
 
     print('head_L = {} \t head_R = {}'.format(head[0,0,0], head[0,0,-1]))
     
     # Obtenemos los resultados del BUDGET
-    bud  = flopy.utils.CellBudgetFile(os.path.join(os_par["ws"], oc_par["hbudget_file"]),
-                                      precision='double')
+    bud  = flopy.utils.CellBudgetFile(
+        os.path.join(os_par["ws"], 
+                     oc_par["fbudget_file"]),
+        precision='double'
+    )
     # Obtenemos las velocidades
     spdis = bud.get_data(text='DATA-SPDIS')[0]
     qx, qy, qz = flopy.utils.postprocessing.get_specific_discharge(spdis, gwf)
@@ -193,6 +198,71 @@ def plot_flow_1D(gwf, mesh, os_par, oc_par, savefig = False):
 
         if savefig:
             plt.savefig('head.pdf')
+        else:
+            plt.show()
+
+from wexler1 import sol_analytical_t
+def plot_tran_1D(sim, mesh, tm_par, ph_par, os_par, oc_par, savefig = False):
+    """
+    Función para graficar los resultados.
+
+    Paramaters
+    ----------
+    gwf: ModflowGwf
+    Objeto del modelo de flujo GWF
+
+    mesh: MeshDis
+    Objeto que gestiona atributos y métodos de una malla rectangular
+    estructurada y uniforme.
+
+    os_par: dict
+    Parámetros para ejecución de MODFLOW 6, archivos de salida y 
+    path del workspace.
+    """
+    mf6gwt_ra = sim.get_model("transport").obs.output.obs().data
+    ucnobj_mf6 = sim.transport.output.concentration()
+    simtimes = mf6gwt_ra["totim"]
+    obsnames = ["X005", "X405", "X1105"]
+
+    with styles.USGSPlot():
+        plt.rcParams['font.family'] = 'DeJavu Sans'
+    
+        fig, axs = plt.subplots(2, 1, figsize=(5,6), tight_layout=True)
+    
+        iskip = 5
+    
+        atimes = np.arange(0, tm_par["total_time"], 0.1)
+        
+        for i, x in enumerate([0.05, 4.05, 11.05]):
+            a1, idx_filter = sol_analytical_t(i, x, atimes,mesh, ph_par) 
+                    
+            axs[0].plot(atimes[idx_filter], a1[idx_filter], color="k", label="ANALYTICAL")
+    
+            axs[0].plot(simtimes[::iskip], mf6gwt_ra[obsnames[i]][::iskip],
+                        marker="o", ls="none", mec="blue", mfc="none", markersize="4",
+                        label="MODFLOW 6")
+            axs[0].set_ylim(-0.05, 1.2)
+            axs[0].set_xlim(0, 120)
+            axs[0].set_xlabel("Time (seconds)")
+            axs[0].set_ylabel("Normalized Concentration (unitless)")
+            
+        ctimes = [6.0, 60.0, 120.0]
+        x, _, _ = mesh.get_coords()
+        for i, t in enumerate(ctimes):
+            a1, idx_filter = sol_analytical_t(i, x, t, mesh, ph_par, False)
+            
+            axs[1].plot(x, a1, color="k", label="ANALYTICAL")
+            simconc = ucnobj_mf6.get_data(totim=t).flatten()
+            axs[1].plot(x[::iskip], simconc[::iskip],
+                        marker="o", ls="none", mec="blue", mfc="none", markersize="4",
+                        label="MODFLOW 6")
+            axs[1].set_ylim(0, 1.1)
+            axs[1].set_xlim(0, 12)
+            axs[1].set_xlabel("Distance (cm)")
+            axs[1].set_ylabel("Normalized Concentration (unitless)")
+        
+        if savefig:
+            plt.savefig('conc.pdf')
         else:
             plt.show()
 
