@@ -6,14 +6,7 @@ import matplotlib.pyplot as plt # Graficación
 # Biblioteca y módulos de flopy
 import flopy
 from flopy.plot.styles import styles
-
-#-----------------------------------------------------------
-# PATH DE LOS MÓDULOS DESARROLLADOS
-#
-if not("/WMA/src/f1D" in sys.path[0]):
-    sys.path.insert(0, os.path.abspath('/home/jovyan/GMMC/WMA/src/')) 
 import xmf6
-#-----------------------------------------------------------
 
 def build_gwf_1D(mesh, tm_par, ph_par, ml_units, os_par, oc_par):
     """
@@ -185,7 +178,7 @@ if __name__ == '__main__':
                      
     oc_par = dict(
         head_file = f"{os_par['flow_name']}.hds", 
-        hbudget_file = f"{os_par['flow_name']}.bud",            
+        fbudget_file = f"{os_par['flow_name']}.bud",            
     )
     xmf6.nice_print(oc_par, 'Output files')
     # ------------------------------------

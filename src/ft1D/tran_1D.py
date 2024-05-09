@@ -10,14 +10,7 @@ from flopy.plot.styles import styles
 # Definición de parámetros de decaimiento y sorción
 from sorption_decay import *
 from flow_1D import build_gwf_1D
-
-#-----------------------------------------------------------
-# PATH DE LOS MÓDULOS DESARROLLADOS
-#
-if not("/WMA/src/ft1D" in sys.path[0]):
-    sys.path.insert(0, os.path.abspath('/home/jovyan/GMMC/WMA/src/')) 
 import xmf6
-#-----------------------------------------------------------
 
 def build_gwt_1D(mesh, tm_par, ph_par, ml_units, os_par, oc_par):
     """
