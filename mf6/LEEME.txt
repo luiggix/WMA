@@ -1,0 +1,9 @@
+
+Aquí debes poner los ejecutables de MODFLOW 6. Debes crear una carpeta de nombre 'bin' y poner en ella lo siguiente:
+
+bin/
+   mf5to6
+   mf6
+   zbud6
+
+Esto lo tienes que hacer localmente en tu cuenta de MACTI, o en tu computadora.
